@@ -20,7 +20,7 @@ from google.cloud import secretmanager
 
 
 # CREDENTIALS
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../credentials.json"    # FIXME: dev only
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../credentials.json"    # FIXME: dev only
 
 
 # CONFIG
@@ -37,11 +37,9 @@ coin_list = [
 
 
 # FUNCTIONS
-def coingecko_coin_history_daily(event, context):
-# def coingecko_coin_history_daily():    # FIXME: dev only
+# def coingecko_coin_history_daily(event, context):
+def coingecko_coin_history_daily():    # FIXME: dev only
     """ Pulls daily OHLC data for the input list of coins. """
-
-
 
     # Run through each coin in list
     for coin in coin_list:
