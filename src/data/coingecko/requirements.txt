@@ -1,79 +1,50 @@
-# This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
-# platform: osx-64
-aiohttp=3.8.1=pypi_0
-aiosignal=1.2.0=pyhd3eb1b0_0
-async-timeout=4.0.1=pyhd3eb1b0_0
-attrs=21.4.0=pyhd3eb1b0_0
-blas=1.0=mkl
-bottleneck=1.3.4=pypi_0
-brotlipy=0.7.0=pypi_0
-bzip2=1.0.8=h1de35cc_0
-c-ares=1.18.1=hca72f7f_0
-ca-certificates=2022.4.26=hecd8cb5_0
-cachetools=4.2.2=pyhd3eb1b0_0
-certifi=2022.5.18.1=pypi_0
-cffi=1.15.0=pypi_0
-charset-normalizer=2.0.4=pyhd3eb1b0_0
-coverage=6.3.2=pypi_0
-cryptography=37.0.1=pypi_0
-cython=0.29.28=pypi_0
-frozenlist=1.2.0=pypi_0
-google-api-core=2.8.1=pypi_0
-google-auth=2.6.0=pyhd3eb1b0_0
-google-cloud-core=2.2.2=pyhd3eb1b0_0
-google-cloud-secret-manager=2.11.1=pypi_0
-google-cloud-storage=1.43.0=pypi_0
-google-crc32c=1.1.2=pypi_0
-google-resumable-media=1.3.1=pyhd3eb1b0_1
-googleapis-common-protos=1.56.2=pypi_0
-grpc-google-iam-v1=0.12.4=pypi_0
-grpcio=1.46.3=pypi_0
-grpcio-status=1.46.3=pypi_0
-idna=3.3=pyhd3eb1b0_0
-intel-openmp=2021.4.0=hecd8cb5_3538
-libcrc32c=1.1.1=hb1e8313_2
-libcxx=12.0.0=h2f01273_0
-libffi=3.3=hb1e8313_2
-libprotobuf=3.20.1=h8346a28_0
-mkl=2021.4.0=hecd8cb5_637
-mkl-fft=1.3.1=pypi_0
-mkl-random=1.2.2=pypi_0
-mkl-service=2.4.0=pypi_0
-mkl_fft=1.3.1=py310hf879493_0
-mkl_random=1.2.2=py310hc081a56_0
-multidict=5.1.0=pypi_0
-ncurses=6.3=hca72f7f_2
-numexpr=2.8.1=pypi_0
-numpy=1.22.3=pypi_0
-numpy-base=1.22.3=py310hfd2de13_0
-openssl=1.1.1o=hca72f7f_0
-packaging=21.3=pyhd3eb1b0_0
-pandas=1.4.2=pypi_0
-pip=21.2.4=pypi_0
-proto-plus=1.20.5=pypi_0
-protobuf=3.20.1=pypi_0
-pyasn1=0.4.8=pyhd3eb1b0_0
-pyasn1-modules=0.2.8=py_0
-pycparser=2.21=pyhd3eb1b0_0
-pyopenssl=22.0.0=pyhd3eb1b0_0
-pyparsing=3.0.4=pyhd3eb1b0_0
-pysocks=1.7.1=pypi_0
-python=3.10.4=hdfd78df_0
-python-dateutil=2.8.2=pyhd3eb1b0_0
-pytz=2021.3=pyhd3eb1b0_0
-readline=8.1.2=hca72f7f_1
-requests=2.27.1=pyhd3eb1b0_0
-rsa=4.7.2=pyhd3eb1b0_1
-setuptools=61.2.0=pypi_0
-six=1.16.0=pyhd3eb1b0_1
-sqlite=3.38.3=h707629a_0
-tk=8.6.12=h5d9f67b_0
-typing-extensions=4.1.1=hd3eb1b0_0
-typing_extensions=4.1.1=pyh06a4308_0
-tzdata=2022a=hda174b7_0
-urllib3=1.26.9=pypi_0
-wheel=0.37.1=pyhd3eb1b0_0
-xz=5.2.5=hca72f7f_1
-yarl=1.6.3=pypi_0
-zlib=1.2.12=h4dc903c_2
+aiohttp @ file:///opt/concourse/worker/volumes/live/b3617caf-3b05-41e0-5120-f62332fd1317/volume/aiohttp_1646806401506/work
+aiosignal @ file:///tmp/build/80754af9/aiosignal_1637843061372/work
+async-timeout @ file:///tmp/build/80754af9/async-timeout_1637851218186/work
+attrs @ file:///opt/conda/conda-bld/attrs_1642510447205/work
+Bottleneck @ file:///opt/concourse/worker/volumes/live/f7139d11-2eee-4f6e-48cd-73168dc9e900/volume/bottleneck_1648028909796/work
+brotlipy==0.7.0
+cachetools @ file:///tmp/build/80754af9/cachetools_1619597386817/work
+certifi==2022.5.18.1
+cffi @ file:///Users/builder/ci_310/cffi_1643393868399/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+coverage @ file:///opt/concourse/worker/volumes/live/6d8c776a-ac30-4777-7698-aa9485387efe/volume/coverage_1645539123521/work
+cryptography @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_b470f7cb-c8f1-42c9-b84f-23789ea77e7c9difcqh4/croots/recipe/cryptography_1652101134392/work
+Cython @ file:///opt/concourse/worker/volumes/live/4cfc5d38-d014-4cdf-77c4-4d36f6ab5912/volume/cython_1647850374603/work
+frozenlist @ file:///Users/builder/ci_310/frozenlist_1642502209994/work
+google-api-core==2.8.1
+google-auth @ file:///opt/conda/conda-bld/google-auth_1646735974934/work
+google-cloud-core @ file:///opt/conda/conda-bld/google-cloud-core_1646821952931/work
+google-cloud-secret-manager==2.11.1
+google-cloud-storage @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_8063c50a-7d36-4e0b-863d-ca4797981c033315jcoo/croots/recipe/google-cloud-storage_1654699182018/work
+google-crc32c @ file:///Users/builder/ci_310/google-crc32c_1642544281976/work
+google-resumable-media @ file:///tmp/build/80754af9/google-resumable-media_1624367812531/work
+googleapis-common-protos==1.56.2
+grpc-google-iam-v1==0.12.4
+grpcio==1.46.3
+grpcio-status==1.46.3
+idna @ file:///tmp/build/80754af9/idna_1637925883363/work
+mkl-fft==1.3.1
+mkl-random @ file:///opt/concourse/worker/volumes/live/a9eca864-069c-4240-73c8-4e51b036a10d/volume/mkl_random_1639994047876/work
+mkl-service==2.4.0
+multidict @ file:///Users/builder/ci_310/multidict_1642534277559/work
+numexpr @ file:///Users/builder/ci_310/numexpr_1642534542370/work
+numpy @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_e3f85f54-0572-4c0e-b190-4bc4766fc3fenewxarhq/croots/recipe/numpy_and_numpy_base_1652801682879/work
+packaging @ file:///tmp/build/80754af9/packaging_1637314298585/work
+pandas==1.4.2
+proto-plus==1.20.5
+protobuf==3.20.1
+pyasn1 @ file:///Users/ktietz/demo/mc3/conda-bld/pyasn1_1629708007385/work
+pyasn1-modules==0.2.8
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing @ file:///tmp/build/80754af9/pyparsing_1635766073266/work
+PySocks @ file:///Users/builder/ci_310/pysocks_1642536366386/work
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+pytz==2021.3
+requests @ file:///opt/conda/conda-bld/requests_1641824580448/work
+rsa @ file:///tmp/build/80754af9/rsa_1614366226499/work
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+typing_extensions @ file:///opt/conda/conda-bld/typing_extensions_1647553014482/work
+urllib3 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_0b00bbfb-4d57-4b5b-af70-5677ec53f4ac495c5h1w/croots/recipe/urllib3_1650637219008/work
+yarl @ file:///Users/builder/ci_310/yarl_1642513699997/work
