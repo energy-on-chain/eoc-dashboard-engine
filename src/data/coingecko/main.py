@@ -5,6 +5,7 @@
 # DATE CREATED: 7-Jun-2022
 # DESCRIPTION: Pull API data from coingecko.com. Designed to be used as a google
 # cloud function.
+# COPYRIGHT: Powered by CoinGecko API (https://www.coingecko.com/)
 ###############################################################################
 import os
 import sys
