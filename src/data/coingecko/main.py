@@ -27,13 +27,32 @@ from google.cloud import secretmanager
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
 output_cloud_directory = 'data/coin_histories'
-base_file_name = 'coingecko_daily_coin_history_'
+base_file_name = 'coingecko_coin_history_24h'
 vs_currency = 'usd'
 days = 'max'
 interval = 'daily'
 coin_list = [
     'bitcoin',
-    'ethereum'
+    'ethereum',
+    'tether',
+    'usd-coin',
+    'binancecoin',
+    'binance-usd',
+    'ripple',
+    'cardano',
+    'solana',
+    'dogecoin',
+    'dai',
+    'polkadot',
+    'kusama',
+    'avalanche-2',
+    'matic-network',
+    'fantom',
+    'aave',
+    'uniswap',
+    'sushi',
+    'hex',
+    'litecoin',
 ]
 
 
