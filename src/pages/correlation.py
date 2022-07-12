@@ -145,8 +145,8 @@ def calculate_correlation(input_df, returns_header1, returns_header2, lookback):
     return correlation_coeff
 
 
-# def generate_correlation_page(event, context):    # FIXME: for google cloud function deployment
-def generate_correlation_page():
+def generate_correlation_page(event, context):    # FIXME: for google cloud function deployment
+# def generate_correlation_page():
     """ Main run function that is called to compute correlations between all possible combinations of the specified stocks and cryptos
     for the input list of lookback periods. It then outputs the resulting correlation matrix to google cloud and google sheets. """
 
