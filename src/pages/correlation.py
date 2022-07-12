@@ -18,12 +18,6 @@ import numpy as np
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.cloud import storage
-# from googleapiclient.discovery import build
-# from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-# from google.auth.transport.requests import Request
-# from googleapiclient.discovery import build
-# from google.oauth2 import service_account
-# from googleapiclient.errors import HttpError as HTTPError
 from oauth2client.service_account import ServiceAccountCredentials
 
 
@@ -33,7 +27,6 @@ JSON_FILE = 'credentials.json'
 gauth = GoogleAuth()
 gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)
 drive = GoogleDrive(gauth)
-print(drive)
 
 
 # CONFIG
@@ -53,7 +46,6 @@ stock_path = 'data/stock_histories/fmp_daily_stock_history_'
 stock_list = [
     'AAPL',
     'AMZN',
-    'CLUSD',
     'GOOG',
     'META',
     'NGUSD',
@@ -66,16 +58,22 @@ stock_list = [
 
 # FUNCTIONS
 def create_matrix(asset_list, permutation_dict):
+    """ Takes in list of assets that are of interest for the correlation matrix,
+    finds their previously calculated correlation value in the input dict, then
+    returns a dataframe (matrix) that can be displayed on an excel sheet. """
 
     df = pd.DataFrame(1.0, index=asset_list, columns=asset_list)    # instantiate df
     
-    for permutation in list(permutation_dict.keys()):
+    for permutation in list(permutation_dict.keys()):    # find the correlation val that corresponds to each pair of interest
         df.loc[permutation[0]][permutation[1]] = permutation_dict[permutation]
 
     return df
 
 
 def output_results(asset_list, correlation_matrix):
+    """ Outputs the correlation matrices specified by the user in 
+    the input 'correlation_matrix' variable to google cloud and
+    google sheets for final beautification on the front end. """
 
     # Create dir for temp files if it doesn't already exist
     if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):    
@@ -117,39 +115,6 @@ def output_results(asset_list, correlation_matrix):
     csv.Upload({'convert': True})
     print('updated google drive file!')
 
-    # file_list = drive.ListFile({'q': '"%s" in parents and trashed=false' % DRIVE_FOLDER_ID}).GetList()
-    # print(file_list)
-    # for f in file_list:
-        # if f["title"] == REFERENCE_FILENAME: # To update/rewrite, use the existing file name in your drive
-            # print(f["title"])
-        #     with pd.ExcelWriter(“output.xlsx”) as writer:
-        #         for sheet in list(google_sheets_matrix.keys()):
-        #             google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
-        #         writer.save()
-        #         writer.close()
-        #    f.SetContentFile(“output.xlsx”)
-        #    f.Upload()
-        #    break
-
-    # file_list = drive.ListFile({‘q’: “‘root’ in parents and trashed=false”}).GetList()
-    # for f in file_list:
-    #     if f[‘title’] == ‘Colab Notebooks’: # Folder where the file already exists
-    #         #print(‘File:’, f)
-    #         updateFileInColab(f[‘id’])
-    #         break
-    # with pd.ExcelWriter(local_file_excel) as writer:
-    #     for sheet in list(google_sheets_matrix.keys()):
-    #         google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
-    #     writer.save()
-    #     writer.close()
-
-
-    # df.to_excel(file_name_excel, header=True, index=True)    
-    # csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
-    # csv.SetContentFile(local_file_excel)
-    # csv.Upload({'convert': True})
-    # print('updated google drive file!')
-
     # Tear down temp directory
     shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))
 
@@ -180,7 +145,8 @@ def calculate_correlation(input_df, returns_header1, returns_header2, lookback):
     return correlation_coeff
 
 
-def run():
+# def generate_correlation_page(event, context):    # FIXME: for google cloud function deployment
+def generate_correlation_page():
     """ Main run function that is called to compute correlations between all possible combinations of the specified stocks and cryptos
     for the input list of lookback periods. It then outputs the resulting correlation matrix to google cloud and google sheets. """
 
@@ -191,9 +157,10 @@ def run():
     # Load cryptos
     for crypto in crypto_list:
         
-        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # download file
+        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # download file FIXME: filename
+        # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    # download file FIXME: filename
         
-        crypto_df = crypto_df[['utc', 'price(usd)']]    
+        crypto_df = crypto_df[['utc', 'price(usd)']]    # only need price and time
         crypto_df['date'] = pd.to_datetime(crypto_df['utc']).dt.date
         crypto_df = crypto_df.drop_duplicates(subset=['date'], keep="first")
         crypto_df['previous_close'] = crypto_df['price(usd)'].shift(periods=1)
@@ -208,9 +175,9 @@ def run():
     # Load stocks
     for stock in stock_list:
 
-        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')
+        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # FIXME: filename
 
-        stock_df = stock_df[['date', 'close']]
+        stock_df = stock_df[['date', 'close']]    # eliminate unnecessary columns
         stock_df['date'] = pd.to_datetime(stock_df['date']).dt.date
         stock_df = stock_df.drop_duplicates(subset=['date'], keep="first")
         stock_df['previous_close'] = stock_df['close'].shift(periods=1)
@@ -222,7 +189,7 @@ def run():
         history_dict[stock] = stock_df
 
     # Define permutations to be run
-    permutation_list = list(itertools.permutations(history_dict.keys(), r=2))    # generate all possible pairs
+    permutation_list = list(itertools.permutations(history_dict.keys(), r=2))    # generate all possible market pairs
 
     # Run all permutations for all lookbacks
     for lookback_period in lookback_period_list:
@@ -235,7 +202,7 @@ def run():
 
             df0 = history_dict[permutation[0]]
             df1 = history_dict[permutation[1]]
-            merged_df = df0.merge(df1, on=['date'])
+            merged_df = df0.merge(df1, on=['date'])    # ensure that only dates that occur in both histories are used for crypto / stock pairs
             merged_df = merged_df.dropna()
 
             correlation_coeff = calculate_correlation(merged_df, permutation[0] + '_rate_of_return', permutation[1] + '_rate_of_return', lookback_period)
@@ -249,4 +216,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    generate_correlation_page()

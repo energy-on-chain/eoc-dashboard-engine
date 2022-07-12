@@ -27,7 +27,7 @@ from google.cloud import secretmanager
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
 output_cloud_directory = 'data/coin_histories'
-base_file_name = 'coingecko_coin_history_24h'
+base_file_name = 'coingecko_coin_history_24h_'
 vs_currency = 'usd'
 days = 'max'
 interval = 'daily'
@@ -90,6 +90,8 @@ def coingecko_coin_history_daily(event, context):
         merged_df.to_csv(temp_file, index=False)
         blob = bucket.blob(os.path.join(output_cloud_directory, file_name))
         blob.upload_from_filename(temp_file)
+
+        print(merged_df)
 
 
 # Local testing entry point
