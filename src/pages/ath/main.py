@@ -38,18 +38,14 @@ DRIVE_FOLDER_ID = '14LAPdLKJYVI1TS0pUL0D_UFShCoXLt4P'    #FIXME
 REFERENCE_FILE_ID = '1bPH7CLEOHmDQDHcnhSkSdQyekqrtUsxnvFCxvN_TtlM'    #FIXME
 REFERENCE_FILENAME = 'eoc-dashboard-correlation-matrix-references'    #FIXME
 crypto_path = 'data/coin_histories/coingecko_dailiy_coin_history_'
-coin_list = [
+crypto_list = [
     'bitcoin',
     'ethereum',
-    'tether',
-    'usd-coin',
     'binancecoin',
-    'binance-usd',
     'ripple',
     'cardano',
     'solana',
     'dogecoin',
-    'dai',
     'polkadot',
     'kusama',
     'avalanche-2',
@@ -113,14 +109,20 @@ def output_results(asset_list, correlation_matrix):
     shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))
 
 
-def _calculate_percentage_drawdown(df, price_column_label):
+def _calculate_percentage_drawdown(df, price_column_label, coin):
     """ Calculates how far down (in terms of percentage) a coin is down given the
     input time history. """
 
     current_price = df[price_column_label].iloc[-1]
     ath_price = df[price_column_label].max()
+    percent_drawdown = round(current_price / ath_price, 3)
 
-    return round(current_price / ath_price, 2)
+    print(coin)
+    print('Current price: ', current_price)
+    print('ATH: ', ath_price)
+    print('% Drawdown: ', percent_drawdown)
+
+    return round(1 - percent_drawdown, 3)
 
 
 # def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
@@ -145,11 +147,10 @@ def generate_ath_page():
     # Calculate aths
     ath_dict = {}
     for coin, history in coin_dict.items():
-        ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)')
+        ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)', coin)
     print(ath_dict)
 
     # Output results
-    output_results(list(history_dict.keys()), big_correlation_matrix)
 
 
 if __name__ == '__main__':
