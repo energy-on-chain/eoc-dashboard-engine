@@ -160,8 +160,8 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     # Load cryptos
     for crypto in crypto_list:
         
-        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # download file FIXME: filename
-        # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    # download file FIXME: filename
+        # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # original file name
+        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    
         
         crypto_df = crypto_df[['utc', 'price(usd)']]    # only need price and time
         crypto_df['date'] = pd.to_datetime(crypto_df['utc']).dt.date
@@ -178,7 +178,8 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     # Load stocks
     for stock in stock_list:
 
-        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # FIXME: filename
+        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # original file name
+        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_stock_history_24h_' + stock + '.csv')   
 
         stock_df = stock_df[['date', 'close']]    # eliminate unnecessary columns
         stock_df['date'] = pd.to_datetime(stock_df['date']).dt.date
