@@ -19,13 +19,16 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.cloud import storage
 from oauth2client.service_account import ServiceAccountCredentials
+import google.auth
 
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
 JSON_FILE = 'credentials.json'
 gauth = GoogleAuth()
-gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)
+# gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
+credentials, project_id = google.auth.default(scopes=SCOPES)
+gauth.credentials = credentials
 drive = GoogleDrive(gauth)
 
 
@@ -215,5 +218,5 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     output_results(list(history_dict.keys()), big_correlation_matrix)
 
 
-if __name__ == '__main__':
-    generate_correlation_page()
+# if __name__ == '__main__':
+#     generate_correlation_page()
