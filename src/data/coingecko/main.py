@@ -74,24 +74,29 @@ def coingecko_coin_history_daily(event, context):
             print(e)
 
         # Parse data
-        print('Parsing data for ' + coin + '...')
-        price_df = pd.DataFrame.from_records(res['prices'], columns=['unix', 'price(usd)'])
-        mc_df = pd.DataFrame.from_records(res['market_caps'], columns=['unix', 'market_cap(usd)'])
-        vol_df = pd.DataFrame.from_records(res['total_volumes'], columns=['unix', 'volume(usd)'])
-        merged_df = pd.concat([price_df.set_index('unix'), mc_df.set_index('unix'), vol_df.set_index('unix')], axis=1, join='inner').reset_index()
-        merged_df['utc'] = merged_df['unix'].apply(lambda x: datetime.datetime.utcfromtimestamp(x/1000).strftime('%Y-%m-%d %H:%M:%S'))    # utc time
+        try:
+            print('Parsing data for ' + coin + '...')
+            price_df = pd.DataFrame.from_records(res['prices'], columns=['unix', 'price(usd)'])
+            mc_df = pd.DataFrame.from_records(res['market_caps'], columns=['unix', 'market_cap(usd)'])
+            vol_df = pd.DataFrame.from_records(res['total_volumes'], columns=['unix', 'volume(usd)'])
+            merged_df = pd.concat([price_df.set_index('unix'), mc_df.set_index('unix'), vol_df.set_index('unix')], axis=1, join='inner').reset_index()
+            merged_df['utc'] = merged_df['unix'].apply(lambda x: datetime.datetime.utcfromtimestamp(x/1000).strftime('%Y-%m-%d %H:%M:%S'))    # utc time
 
-        # Save data to cloud
-        print('Saving data for ' + coin + '...')
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        file_name = base_file_name + coin + '.csv'
-        temp_file = '/tmp/' + file_name
-        merged_df.to_csv(temp_file, index=False)
-        blob = bucket.blob(os.path.join(output_cloud_directory, file_name))
-        blob.upload_from_filename(temp_file)
+            # Save data to cloud
+            print('Saving data for ' + coin + '...')
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            file_name = base_file_name + coin + '.csv'
+            temp_file = '/tmp/' + file_name
+            merged_df.to_csv(temp_file, index=False)
+            blob = bucket.blob(os.path.join(output_cloud_directory, file_name))
+            blob.upload_from_filename(temp_file)
 
-        print(merged_df)
+            print(merged_df)
+
+        except Exception as e:
+            print('Error during coingecko parsing of: ' + coin)
+            print(e)
 
 
 # Local testing entry point
