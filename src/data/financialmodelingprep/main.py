@@ -31,7 +31,7 @@ fmp_api_key = client.access_secret_version({"name": f"projects/{project_id}/secr
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
 output_cloud_directory = 'data/stock_histories'
-base_file_name = 'fmp_daily_stock_history_'
+base_file_name = 'fmp_stock_history_24h_'
 date_from = '2012-01-01'
 date_to = datetime.date.today().strftime("%Y-%m-%d")
 stock_list = [

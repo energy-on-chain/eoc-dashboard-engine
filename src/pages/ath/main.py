@@ -1,12 +1,10 @@
 ###############################################################################
-# FILENAME: correlation.py
+# FILENAME: ath.py
 # CPROJECT: EOC-Dashboard-Engine
 # AUTHOR: Matt Hartigan
-# DATE CREATED: 10-Jun-2022
-# DESCRIPTION: Pull in data from cloud and generate a correlation matrix for 
-# all of the included assets. Outputs results to cloud and google sheet on 
-# google drive. The correlation method used is Pearson. 
-# Source: https://algotrading101.com/learn/python-correlation-guide/
+# DATE CREATED: 13-July-2022
+# DESCRIPTION: Pull in data from cloud and generate a list of the percentage 
+# down from all time highs that each coin is (on daily time scale).
 ###############################################################################
 import os
 import shutil
@@ -26,9 +24,9 @@ import google.auth
 SCOPES = ['https://www.googleapis.com/auth/drive']
 JSON_FILE = 'credentials.json'
 gauth = GoogleAuth()
-# gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-credentials, project_id = google.auth.default(scopes=SCOPES)
-gauth.credentials = credentials
+gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
+# credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+# gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
 
 
@@ -36,43 +34,36 @@ drive = GoogleDrive(gauth)
 bucket_name = 'eoc-dashboard-bucket'
 local_file_path = 'tmp'
 cloud_file_path = 'pages'
-DRIVE_FOLDER_ID = '14LAPdLKJYVI1TS0pUL0D_UFShCoXLt4P'
-REFERENCE_FILE_ID = '1bPH7CLEOHmDQDHcnhSkSdQyekqrtUsxnvFCxvN_TtlM'
-REFERENCE_FILENAME = 'eoc-dashboard-correlation-matrix-references'
-lookback_period_list = [7, 30, 90, 365]
-crypto_path = 'data/coin_histories/coingecko_coin_history_24h_'
-crypto_list = [
+DRIVE_FOLDER_ID = '14LAPdLKJYVI1TS0pUL0D_UFShCoXLt4P'    #FIXME
+REFERENCE_FILE_ID = '1bPH7CLEOHmDQDHcnhSkSdQyekqrtUsxnvFCxvN_TtlM'    #FIXME
+REFERENCE_FILENAME = 'eoc-dashboard-correlation-matrix-references'    #FIXME
+crypto_path = 'data/coin_histories/coingecko_dailiy_coin_history_'
+coin_list = [
     'bitcoin',
     'ethereum',
-]
-stock_path = 'data/stock_histories/fmp_stock_history_24h_'
-stock_list = [
-    'AAPL',
-    'AMZN',
-    'GOOG',
-    'META',
-    'NGUSD',
-    'XAUTUSD',
-    '^DJI',
-    '^GSPC',
-    '^IXIC',
+    'tether',
+    'usd-coin',
+    'binancecoin',
+    'binance-usd',
+    'ripple',
+    'cardano',
+    'solana',
+    'dogecoin',
+    'dai',
+    'polkadot',
+    'kusama',
+    'avalanche-2',
+    'matic-network',
+    'fantom',
+    'aave',
+    'uniswap',
+    'sushi',
+    'hex',
+    'litecoin',
 ]
 
 
 # FUNCTIONS
-def create_matrix(asset_list, permutation_dict):
-    """ Takes in list of assets that are of interest for the correlation matrix,
-    finds their previously calculated correlation value in the input dict, then
-    returns a dataframe (matrix) that can be displayed on an excel sheet. """
-
-    df = pd.DataFrame(1.0, index=asset_list, columns=asset_list)    # instantiate df
-    
-    for permutation in list(permutation_dict.keys()):    # find the correlation val that corresponds to each pair of interest
-        df.loc[permutation[0]][permutation[1]] = permutation_dict[permutation]
-
-    return df
-
-
 def output_results(asset_list, correlation_matrix):
     """ Outputs the correlation matrices specified by the user in 
     the input 'correlation_matrix' variable to google cloud and
@@ -148,10 +139,10 @@ def calculate_correlation(input_df, returns_header1, returns_header2, lookback):
     return correlation_coeff
 
 
-def generate_correlation_page(event, context):    # FIXME: for google cloud function deployment
-# def generate_correlation_page():
-    """ Main run function that is called to compute correlations between all possible combinations of the specified stocks and cryptos
-    for the input list of lookback periods. It then outputs the resulting correlation matrix to google cloud and google sheets. """
+# def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
+def generate_ath_page():
+    """ Main run function that is called to calculate and output ath drawdown for each
+    coind of interest to a google sheet. """
 
     # GET DATA
     history_dict = {}
@@ -218,5 +209,5 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     output_results(list(history_dict.keys()), big_correlation_matrix)
 
 
-# if __name__ == '__main__':
-#     generate_correlation_page()
+if __name__ == '__main__':
+    generate_ath_page()
