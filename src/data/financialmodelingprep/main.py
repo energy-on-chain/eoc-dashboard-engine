@@ -62,26 +62,34 @@ def fmp_stock_history_daily(event, context):
         try:
             url = 'https://financialmodelingprep.com/api/v3/historical-price-full/' + stock + '?apikey=' + fmp_api_key
             res = requests.get(url).json()
+            
         except Exception as e:
             print('Error during financial modeling prep api pull for ' + stock)
             print(e)
 
-        # Parse data
-        print('Parsing data for ' + stock + '...')
-        df = pd.DataFrame(res['historical'])
-        df = df.sort_values(by=['date'], ascending=True)
-        df = df.reset_index(drop=True)
-        print(df)
+        try:
+            # Parse data
+            print('Parsing data for ' + stock + '...')
+            df = pd.DataFrame(res['historical'])
+            df = df.sort_values(by=['date'], ascending=True)
+            df = df.reset_index(drop=True)
+            print(df)
 
-        # Save data to cloud
-        print('Saving data for ' + stock + '...')
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        file_name = base_file_name + stock + '.csv'
-        temp_file = '/tmp/' + file_name
-        df.to_csv(temp_file, index=False)
-        blob = bucket.blob(os.path.join(output_cloud_directory, file_name))
-        blob.upload_from_filename(temp_file)
+            # Save data to cloud
+            print('Saving data for ' + stock + '...')
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            file_name = base_file_name + stock + '.csv'
+            temp_file = '/tmp/' + file_name
+            df.to_csv(temp_file, index=False)
+            blob = bucket.blob(os.path.join(output_cloud_directory, file_name))
+            blob.upload_from_filename(temp_file)
+
+        except Exception as e:
+            print('Error during financial modeling prep parsing of:  ' + stock)
+            print(e)
+
+
 
 
 # Local testing entry point

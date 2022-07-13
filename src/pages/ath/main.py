@@ -113,30 +113,14 @@ def output_results(asset_list, correlation_matrix):
     shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))
 
 
-def calculate_correlation(input_df, returns_header1, returns_header2, lookback):
-    """ Calculates the Pearson correlation coefficient of the two input data frames for 
-    the input lookback period and returns the result as a float. Assumes that the two input
-    data frames are already properly formatted (i.e. they have dates that match). """
+def _calculate_percentage_drawdown(df, price_column_label):
+    """ Calculates how far down (in terms of percentage) a coin is down given the
+    input time history. """
 
-    # Format data
-    df = pd.DataFrame()
-    df['x'] = input_df[returns_header1]
-    df['y'] = input_df[returns_header2]
-    df = df.iloc[-lookback:]    # slice the df for the specified lookback period
+    current_price = df[price_column_label].iloc[-1]
+    ath_price = df[price_column_label].max()
 
-    # Perform Pearson correlation coeff calcs
-    df['step1'] = df.x - df.x.mean()
-    df['step2'] = df.y - df.y.mean()
-    df['step3'] = df.step1 * df.step2
-    step4 = df.step3.sum()
-    df['step5'] = df.step1 ** 2
-    df['step6'] = df.step2 ** 2
-    step7 = df.step5.sum() * df.step6.sum()
-    step8 = np.sqrt(step7)
-    correlation_coeff = step4 / step8
-
-    # print(correlation_coeff)    # can validate agains the python library function using: df.x.corr(df.y)
-    return correlation_coeff
+    return round(current_price / ath_price, 2)
 
 
 # def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
@@ -144,67 +128,26 @@ def generate_ath_page():
     """ Main run function that is called to calculate and output ath drawdown for each
     coind of interest to a google sheet. """
 
-    # GET DATA
-    history_dict = {}
-    big_correlation_matrix = {}
-
-    # Load cryptos
+    # Get coin data
+    coin_dict = {}
     for crypto in crypto_list:
         
-        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # download file FIXME: filename
-        # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    # download file FIXME: filename
+        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    # download file FIXME: filename
         
         crypto_df = crypto_df[['utc', 'price(usd)']]    # only need price and time
         crypto_df['date'] = pd.to_datetime(crypto_df['utc']).dt.date
         crypto_df = crypto_df.drop_duplicates(subset=['date'], keep="first")
-        crypto_df['previous_close'] = crypto_df['price(usd)'].shift(periods=1)
-        crypto_df[crypto + '_rate_of_return'] = (crypto_df['price(usd)'] - crypto_df['previous_close']) / crypto_df['previous_close']    # calc rate of return
 
-        crypto_df.drop('price(usd)', axis=1, inplace=True)    # eliminate unnecessary columns
-        crypto_df.drop('previous_close', axis=1, inplace=True)    
-        crypto_df.drop('utc', axis=1, inplace=True)   
+        crypto_df.drop('utc', axis=1, inplace=True)   # eliminate duplicate columns
 
-        history_dict[crypto] = crypto_df
+        coin_dict[crypto] = crypto_df
 
-    # Load stocks
-    for stock in stock_list:
+    # Calculate aths
+    ath_dict = {}
+    for coin, history in coin_dict.items():
+        ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)')
+    print(ath_dict)
 
-        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # FIXME: filename
-
-        stock_df = stock_df[['date', 'close']]    # eliminate unnecessary columns
-        stock_df['date'] = pd.to_datetime(stock_df['date']).dt.date
-        stock_df = stock_df.drop_duplicates(subset=['date'], keep="first")
-        stock_df['previous_close'] = stock_df['close'].shift(periods=1)
-        stock_df[stock + '_rate_of_return'] = (stock_df['close'] - stock_df['previous_close']) / stock_df['previous_close']    # calc rate of return
-
-        stock_df.drop('close', axis=1, inplace=True)    # eliminate unnecessary columns
-        stock_df.drop('previous_close', axis=1, inplace=True)    
-
-        history_dict[stock] = stock_df
-
-    # Define permutations to be run
-    permutation_list = list(itertools.permutations(history_dict.keys(), r=2))    # generate all possible market pairs
-
-    # Run all permutations for all lookbacks
-    for lookback_period in lookback_period_list:
-
-        small_correlation_matrix = {}    # only covers correlations for the current lookback period being run
-
-        for permutation in permutation_list:
-
-            print('Computing correlation between {} and {} for {} lookback period...'.format(permutation[0], permutation[1], lookback_period))
-
-            df0 = history_dict[permutation[0]]
-            df1 = history_dict[permutation[1]]
-            merged_df = df0.merge(df1, on=['date'])    # ensure that only dates that occur in both histories are used for crypto / stock pairs
-            merged_df = merged_df.dropna()
-
-            correlation_coeff = calculate_correlation(merged_df, permutation[0] + '_rate_of_return', permutation[1] + '_rate_of_return', lookback_period)
-
-            small_correlation_matrix[permutation] = correlation_coeff
-
-        big_correlation_matrix[lookback_period] = small_correlation_matrix
-    
     # Output results
     output_results(list(history_dict.keys()), big_correlation_matrix)
 
