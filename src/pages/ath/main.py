@@ -24,15 +24,15 @@ import google.auth
 SCOPES = ['https://www.googleapis.com/auth/drive']
 JSON_FILE = 'credentials.json'
 gauth = GoogleAuth()
-gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-# credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
-# gauth.credentials = credentials    # production only
+# gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
+credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
 
 
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
-local_file_path = 'tmp'
+local_file_path = '/tmp'
 cloud_file_path = 'pages'
 file_name = 'eoc-dashboard-crypto-ath-percent-drawdown.csv'
 file_name_excel = 'eoc-dashboard-crypto-ath-percent-drawdown.xlsx'
@@ -106,8 +106,8 @@ def _calculate_percentage_drawdown(df, price_column_label, coin):
     return round(1 - percent_drawdown, 3)
 
 
-# def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
-def generate_ath_page():
+def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
+# def generate_ath_page():
     """ Main run function that is called to calculate and output ath drawdown for each
     coind of interest to a google sheet. """
 

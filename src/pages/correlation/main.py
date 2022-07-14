@@ -34,7 +34,7 @@ drive = GoogleDrive(gauth)
 
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
-local_file_path = 'tmp'
+local_file_path = '/tmp'
 cloud_file_path = 'pages'
 DRIVE_FOLDER_ID = '14LAPdLKJYVI1TS0pUL0D_UFShCoXLt4P'
 REFERENCE_FILE_ID = '1bPH7CLEOHmDQDHcnhSkSdQyekqrtUsxnvFCxvN_TtlM'
@@ -163,20 +163,25 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     # Load cryptos
     for crypto in crypto_list:
         
-        # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # original file name
-        crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    
-        
-        crypto_df = crypto_df[['utc', 'price(usd)']]    # only need price and time
-        crypto_df['date'] = pd.to_datetime(crypto_df['utc']).dt.date
-        crypto_df = crypto_df.drop_duplicates(subset=['date'], keep="first")
-        crypto_df['previous_close'] = crypto_df['price(usd)'].shift(periods=1)
-        crypto_df[crypto + '_rate_of_return'] = (crypto_df['price(usd)'] - crypto_df['previous_close']) / crypto_df['previous_close']    # calc rate of return
+        try:
+            # crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_daily_coin_history_' + crypto + '.csv')    # original file name
+            crypto_df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + crypto + '.csv')    
+            
+            crypto_df = crypto_df[['utc', 'price(usd)']]    # only need price and time
+            crypto_df['date'] = pd.to_datetime(crypto_df['utc']).dt.date
+            crypto_df = crypto_df.drop_duplicates(subset=['date'], keep="first")
+            crypto_df['previous_close'] = crypto_df['price(usd)'].shift(periods=1)
+            crypto_df[crypto + '_rate_of_return'] = (crypto_df['price(usd)'] - crypto_df['previous_close']) / crypto_df['previous_close']    # calc rate of return
 
-        crypto_df.drop('price(usd)', axis=1, inplace=True)    # eliminate unnecessary columns
-        crypto_df.drop('previous_close', axis=1, inplace=True)    
-        crypto_df.drop('utc', axis=1, inplace=True)   
+            crypto_df.drop('price(usd)', axis=1, inplace=True)    # eliminate unnecessary columns
+            crypto_df.drop('previous_close', axis=1, inplace=True)    
+            crypto_df.drop('utc', axis=1, inplace=True)   
 
-        history_dict[crypto] = crypto_df
+            history_dict[crypto] = crypto_df            
+
+        except Exception as e:
+            print('Error during correlation function pulling of data for:  ' + stock)
+            print(e)
 
     # Load stocks
     for stock in stock_list:
