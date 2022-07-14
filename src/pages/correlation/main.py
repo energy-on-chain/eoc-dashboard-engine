@@ -81,9 +81,9 @@ def output_results(asset_list, correlation_matrix):
     the input 'correlation_matrix' variable to google cloud and
     google sheets for final beautification on the front end. """
 
-    # Create dir for temp files if it doesn't already exist
-    if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):    
-        os.mkdir(os.path.join(os.getcwd(), 'tmp'))
+    # Create dir for temp files if it doesn't already exist  FIXME: production only
+    # if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):    
+        # os.mkdir(os.path.join(os.getcwd(), 'tmp'))
 
     # Create correlation matrix for each lookback period
     google_sheets_matrix = {}
@@ -122,7 +122,7 @@ def output_results(asset_list, correlation_matrix):
     print('updated google drive file!')
 
     # Tear down temp directory
-    shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))
+    # shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))      FIXME: production only
 
 
 def calculate_correlation(input_df, returns_header1, returns_header2, lookback):

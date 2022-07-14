@@ -1,10 +1,11 @@
 ###############################################################################
-# FILENAME: ath.py
+# FILENAME: compare_time_history.py
 # CPROJECT: EOC-Dashboard-Engine
 # AUTHOR: Matt Hartigan
-# DATE CREATED: 13-July-2022
-# DESCRIPTION: Pull in data from cloud and generate a list of the percentage 
-# down from all time highs that each coin is (on daily time scale).
+# DATE CREATED: 14-July-2022
+# DESCRIPTION: Pulls in time histories for assets from cloud, gives them a uniform
+# set of dates, then outputs the result to drive and cloud for use in performance
+# comparison plots, etc.
 ###############################################################################
 import os
 import shutil
@@ -24,22 +25,20 @@ import google.auth
 SCOPES = ['https://www.googleapis.com/auth/drive']
 JSON_FILE = 'credentials.json'
 gauth = GoogleAuth()
-# gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
-gauth.credentials = credentials    # production only
+gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
+# credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+# gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
 
 
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
-local_file_path = '/tmp'
 cloud_file_path = 'pages'
 file_name = 'eoc-dashboard-crypto-ath-percent-drawdown.csv'
 file_name_excel = 'eoc-dashboard-crypto-ath-percent-drawdown.xlsx'
 DRIVE_FOLDER_ID = '1w8d5rb2khorGtsUOvQDQmDTx-p-NtGPp'   
 REFERENCE_FILE_ID = '1a19zS8RWsURrXv81MdanRmNg21KS1aiKyux3VSrPVcQ'   
 REFERENCE_FILENAME = 'eoc-dashboard-crypto-ath-percent-drawdown-reference'    
-crypto_path = 'data/coin_histories/coingecko_dailiy_coin_history_'
 crypto_list = [
     'bitcoin',
     'ethereum',
@@ -66,9 +65,9 @@ def output_results(df):
     """ Outputs the list of percentage ath drawdowns to 
     google drive sheets file and google cloud csv file. """
 
-    # Create dir for temp files if it doesn't already exist      FIXME: production only
-    # if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):    
-    #     os.mkdir(os.path.join(os.getcwd(), 'tmp'))
+    # Create dir for temp files if it doesn't already exist
+    # if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):      # FIXME: production only    
+        # os.mkdir(os.path.join(os.getcwd(), 'tmp'))
 
     # Output to google cloud storage
     storage_client = storage.Client()
@@ -92,24 +91,18 @@ def output_results(df):
     print('updated google drive file!')
 
     # # Tear down temp directory
-    # shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))      FIXME: production only
+    shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))    #FIXME: production only
 
 
-def _calculate_percentage_drawdown(df, price_column_label, coin):
-    """ Calculates how far down (in terms of percentage) a coin is down given the
-    input time history. """
-
-    current_price = df[price_column_label].iloc[-1]
-    ath_price = df[price_column_label].max()
-    percent_drawdown = round(current_price / ath_price, 3)
-
-    return round(1 - percent_drawdown, 3)
+def format_time_history(coin, time_history):
+    
+    pass
 
 
-def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
-# def generate_ath_page():
-    """ Main run function that is called to calculate and output ath drawdown for each
-    coind of interest to a google sheet. """
+def generate_time_history_comparison_files(event, context):    # FIXME: for google cloud function deployment
+# def generate_time_history_comparison_files():
+    """ Main run function that is called to pull in asset time histories, format, and output them to 
+    cloud and sheets for plotting, etc.. """
 
     # Get coin data
     coin_dict = {}
@@ -125,10 +118,9 @@ def generate_ath_page(event, context):    # FIXME: for google cloud function dep
 
         coin_dict[crypto] = crypto_df
 
-    # Calculate aths
-    ath_dict = {}
-    for coin, history in coin_dict.items():
-        ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)', coin)
+    # Format time histories
+    for coin, time_history in coin_dict.items():
+        format_time_history(coin, time_history)
 
     # Output results
     output_results(pd.DataFrame([ath_dict]))
