@@ -34,9 +34,11 @@ drive = GoogleDrive(gauth)
 bucket_name = 'eoc-dashboard-bucket'
 local_file_path = 'tmp'
 cloud_file_path = 'pages'
-DRIVE_FOLDER_ID = '14LAPdLKJYVI1TS0pUL0D_UFShCoXLt4P'    #FIXME
-REFERENCE_FILE_ID = '1bPH7CLEOHmDQDHcnhSkSdQyekqrtUsxnvFCxvN_TtlM'    #FIXME
-REFERENCE_FILENAME = 'eoc-dashboard-correlation-matrix-references'    #FIXME
+file_name = 'eoc-dashboard-crypto-ath-percent-drawdown.csv'
+file_name_excel = 'eoc-dashboard-crypto-ath-percent-drawdown.xlsx'
+DRIVE_FOLDER_ID = '1w8d5rb2khorGtsUOvQDQmDTx-p-NtGPp'   
+REFERENCE_FILE_ID = '1a19zS8RWsURrXv81MdanRmNg21KS1aiKyux3VSrPVcQ'   
+REFERENCE_FILENAME = 'eoc-dashboard-crypto-ath-percent-drawdown-reference'    
 crypto_path = 'data/coin_histories/coingecko_dailiy_coin_history_'
 crypto_list = [
     'bitcoin',
@@ -60,44 +62,28 @@ crypto_list = [
 
 
 # FUNCTIONS
-def output_results(asset_list, correlation_matrix):
-    """ Outputs the correlation matrices specified by the user in 
-    the input 'correlation_matrix' variable to google cloud and
-    google sheets for final beautification on the front end. """
+def output_results(df):
+    """ Outputs the list of percentage ath drawdowns to 
+    google drive sheets file and google cloud csv file. """
 
     # Create dir for temp files if it doesn't already exist
     if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):    
         os.mkdir(os.path.join(os.getcwd(), 'tmp'))
 
-    # Create correlation matrix for each lookback period
-    google_sheets_matrix = {}
-    for lookback in correlation_matrix.keys():
-
-        print('Correlation matrix for: {} day lookback'.format(lookback))
-        df = create_matrix(asset_list, correlation_matrix[lookback])
-        print(df)
-
-        # Output to google cloud storage
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        file_name = 'eoc-dashboard-correlation-matrix-' + str(lookback) + 'day.csv'
-        local_file = local_file_path + '/' + file_name
-        cloud_file = cloud_file_path + '/' + file_name
-        df.to_csv(local_file, header=True, index=True)
-        blob = bucket.blob(cloud_file)
-        blob.upload_from_filename(local_file) 
-        print('updated google cloud file!')
-
-        # Prep for output to google sheets
-        google_sheets_matrix[str(lookback)] = df
+    # Output to google cloud storage
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    local_file = local_file_path + '/' + file_name
+    cloud_file = cloud_file_path + '/' + file_name
+    df.to_csv(local_file, header=True, index=True)
+    blob = bucket.blob(cloud_file)
+    blob.upload_from_filename(local_file) 
+    print('updated google cloud file!')
 
     # Output to google sheets
-    file_name_excel = 'eoc-dashboard-correlation-matrix.xlsx'
-    local_file_excel = local_file_path + '/' + file_name_excel
-
+    local_file_excel = local_file_path + '/' + file_name_excel    # name file path
     writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
-    for sheet in list(google_sheets_matrix.keys()):
-        google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
+    df.to_excel(writer, sheet_name='ath_drawdown')
     writer.save()
 
     csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
@@ -105,7 +91,7 @@ def output_results(asset_list, correlation_matrix):
     csv.Upload({'convert': True})
     print('updated google drive file!')
 
-    # Tear down temp directory
+    # # Tear down temp directory
     shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))
 
 
@@ -116,11 +102,6 @@ def _calculate_percentage_drawdown(df, price_column_label, coin):
     current_price = df[price_column_label].iloc[-1]
     ath_price = df[price_column_label].max()
     percent_drawdown = round(current_price / ath_price, 3)
-
-    print(coin)
-    print('Current price: ', current_price)
-    print('ATH: ', ath_price)
-    print('% Drawdown: ', percent_drawdown)
 
     return round(1 - percent_drawdown, 3)
 
@@ -148,9 +129,9 @@ def generate_ath_page():
     ath_dict = {}
     for coin, history in coin_dict.items():
         ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)', coin)
-    print(ath_dict)
 
     # Output results
+    output_results(pd.DataFrame([ath_dict]))
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@
 # DESCRIPTION: Pull API data from financialmodelingprep.com. Designed to be used as a google
 # cloud function.
 # COPYRIGHT: Powered by Financial Modeling Prep API (https://site.financialmodelingprep.com/)
+# TERMS OF USE: https://site.financialmodelingprep.com/developer/docs/terms-of-service/
 ###############################################################################
 import os
 import sys
@@ -42,7 +43,9 @@ stock_list = [
     '^GSPC',
     '^DJI',
     '^IXIC',
-    'XAUTUSD',
+    '^TYX',
+    '^TNX',
+    'ZGUSD',
     'CLUSD',
     'NGUSD'
 ]
@@ -94,8 +97,11 @@ def fmp_stock_history_daily(event, context):
 
 # Local testing entry point
 if __name__ == '__main__':
-    fmp_stock_history_daily()
 
+    # fmp_stock_history_daily()
+    # url = 'https://financialmodelingprep.com/api/v3/symbol/available-indexes?apikey=' + fmp_api_key
+    url = 'https://financialmodelingprep.com/api/v3/historical-price-full/' + '^DJI' + '?apikey=' + fmp_api_key
+    print(requests.get(url).json())
 
 # TODO
 # 

@@ -6,6 +6,7 @@
 # DESCRIPTION: Pull API data from coingecko.com. Designed to be used as a google
 # cloud function.
 # COPYRIGHT: Powered by CoinGecko API (https://www.coingecko.com/)
+# TERMS OF USE: https://www.coingecko.com/en/api_terms#:~:text=and%2For%20products.-,Pursuant%20to%20the%20provisions%20of%20this%20API%20Terms%2C%20CoinGecko%20hereby,as%20well%20as%20to%20integrate
 ###############################################################################
 import os
 import sys

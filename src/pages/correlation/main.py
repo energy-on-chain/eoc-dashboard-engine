@@ -51,11 +51,14 @@ stock_list = [
     'AMZN',
     'GOOG',
     'META',
-    'NGUSD',
-    'XAUTUSD',
-    '^DJI',
     '^GSPC',
+    '^DJI',
     '^IXIC',
+    '^TYX',
+    '^TNX',
+    'ZGUSD',
+    'CLUSD',
+    'NGUSD'
 ]
 
 
@@ -178,19 +181,24 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     # Load stocks
     for stock in stock_list:
 
-        # stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # original file name
-        stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_stock_history_24h_' + stock + '.csv')   
+        try:
+            # stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_daily_stock_history_' + stock + '.csv')    # original file name
+            stock_df = pd.read_csv('gs://eoc-dashboard-bucket/data/stock_histories/fmp_stock_history_24h_' + stock + '.csv')   
 
-        stock_df = stock_df[['date', 'close']]    # eliminate unnecessary columns
-        stock_df['date'] = pd.to_datetime(stock_df['date']).dt.date
-        stock_df = stock_df.drop_duplicates(subset=['date'], keep="first")
-        stock_df['previous_close'] = stock_df['close'].shift(periods=1)
-        stock_df[stock + '_rate_of_return'] = (stock_df['close'] - stock_df['previous_close']) / stock_df['previous_close']    # calc rate of return
+            stock_df = stock_df[['date', 'close']]    # eliminate unnecessary columns
+            stock_df['date'] = pd.to_datetime(stock_df['date']).dt.date
+            stock_df = stock_df.drop_duplicates(subset=['date'], keep="first")
+            stock_df['previous_close'] = stock_df['close'].shift(periods=1)
+            stock_df[stock + '_rate_of_return'] = (stock_df['close'] - stock_df['previous_close']) / stock_df['previous_close']    # calc rate of return
 
-        stock_df.drop('close', axis=1, inplace=True)    # eliminate unnecessary columns
-        stock_df.drop('previous_close', axis=1, inplace=True)    
+            stock_df.drop('close', axis=1, inplace=True)    # eliminate unnecessary columns
+            stock_df.drop('previous_close', axis=1, inplace=True)    
 
-        history_dict[stock] = stock_df
+            history_dict[stock] = stock_df
+        
+        except Exception as e:
+            print('Error during correlation function pulling of data for:  ' + stock)
+            print(e)
 
     # Define permutations to be run
     permutation_list = list(itertools.permutations(history_dict.keys(), r=2))    # generate all possible market pairs
