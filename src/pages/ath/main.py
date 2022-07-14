@@ -73,7 +73,7 @@ def output_results(df):
     # Output to google cloud storage
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    local_file = local_file_path + '/' + file_name
+    local_file = '/tmp/' + file_name
     cloud_file = cloud_file_path + '/' + file_name
     df.to_csv(local_file, header=True, index=True)
     blob = bucket.blob(cloud_file)
@@ -81,7 +81,7 @@ def output_results(df):
     print('updated google cloud file!')
 
     # Output to google sheets
-    local_file_excel = local_file_path + '/' + file_name_excel    # name file path
+    local_file_excel = '/tmp/' + file_name_excel    # name file path
     writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='ath_drawdown')
     writer.save()

@@ -97,7 +97,7 @@ def output_results(asset_list, correlation_matrix):
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         file_name = 'eoc-dashboard-correlation-matrix-' + str(lookback) + 'day.csv'
-        local_file = local_file_path + '/' + file_name
+        local_file = '/tmp/' + file_name
         cloud_file = cloud_file_path + '/' + file_name
         df.to_csv(local_file, header=True, index=True)
         blob = bucket.blob(cloud_file)
