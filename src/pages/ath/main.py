@@ -12,32 +12,27 @@ import itertools
 import datetime
 import pandas as pd 
 import numpy as np
+import json
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.cloud import storage
+from google.cloud import secretmanager
 from oauth2client.service_account import ServiceAccountCredentials
 import google.auth
 
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
-
-# JSON_FILE = 'credentials.json'    # dev only
-# gauth = GoogleAuth()    
-# gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-
 gauth = GoogleAuth()    # pydrive library helper class for authenticating
-credentials, project_id = google.auth.default(scopes=SCOPES)    # production only (FIXME: the credentials coming out of this are not equivalent to the gauth.credentials being set above)
-print('Printing the credentials that were returnded by google.auth.default:')
-print(credentials)
-print(credentials.__dict__)
-# print(credentials.__dict__)
-# print(project_id)
-# gauth.credentials = credentials    # production only
-# drive = GoogleDrive(gauth)    # this creates the google drive API instance... correct creds must already be contained in gauth
-# print(gauth.credentials)
-# print(drive.__dict__)
+client = secretmanager.SecretManagerServiceClient()
+secret_name = "EOC_DASHBOARD_SERVICE_ACCT_KEY_JSON"
+project_id = "eoc-dashboard-352623"
+request = {"name": f"projects/{project_id}/secrets/{secret_name}/versions/latest"}
+response = client.access_secret_version(request)
+credentials_json = json.loads(response.payload.data.decode("UTF-8"))
+gauth.credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_json, SCOPES)    # FIXME: get this from the json or from the keyfile
+drive = GoogleDrive(gauth)    # this creates the google drive API instance... correct creds must already be contained in gauth
 
 
 # CONFIG
