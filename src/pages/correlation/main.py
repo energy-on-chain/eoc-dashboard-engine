@@ -18,6 +18,7 @@ import numpy as np
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.cloud import storage
+from google.cloud import secretmanager
 from oauth2client.service_account import ServiceAccountCredentials
 import google.auth
 
