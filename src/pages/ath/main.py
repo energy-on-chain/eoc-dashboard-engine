@@ -111,8 +111,8 @@ def _calculate_percentage_drawdown(df, price_column_label, coin):
     return results_dict
 
 
-# def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
-def generate_ath_page():
+def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
+# def generate_ath_page():
     """ Main run function that is called to calculate and output ath drawdown for each
     coind of interest to a google sheet. """
 
