@@ -24,13 +24,16 @@ import google.auth
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
-JSON_FILE = 'credentials.json'
-gauth = GoogleAuth()
+# JSON_FILE = 'credentials.json'    # dev only
+gauth = GoogleAuth()    
 # gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-credentials, project_id = google.auth.default(scopes=SCOPES)
-gauth.credentials = credentials
-print(gauth.credentials)
+credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+print(credentials)
+print(project_id)
+gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
+print(gauth.credentials)
+print(drive)
 
 
 # CONFIG

@@ -103,8 +103,8 @@ def format_time_history(coin_time_history_dict):
     df = df.rename(columns={'price(usd)': 'bitcoin', 'date': 'date'})
 
     for coin, time_history in coin_time_history_dict.items():
-        df[coin] = time_history['price(usd)']
-    #     df[coin] = np.where(df['date'] == time_history['date'], time_history['price(usd)'], None)
+        # df[coin] = time_history['price(usd)']
+        df[coin] = np.where(df['date'] == time_history['date'], time_history['price(usd)'], None)
    
     # max_time_history_length = 0
     # max_time_history_coin = ''

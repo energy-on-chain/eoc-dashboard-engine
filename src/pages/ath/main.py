@@ -26,12 +26,12 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 gauth = GoogleAuth()    
 # gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
 credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
-print(credentials)
+print(credentials.__dict__)
 print(project_id)
 gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
 print(gauth.credentials)
-print(drive)
+print(drive.__dict__)
 
 
 # CONFIG
