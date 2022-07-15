@@ -94,13 +94,38 @@ def output_results(df):
     shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))    #FIXME: production only
 
 
-def format_time_history(coin, time_history):
+def format_time_history(coin_time_history_dict):
+    """ Takes in dictionary of coin time histories. Uses bitcoin (aka the one with the longest
+    running time history) to create a data frame that holds all coin 1 day time histories where
+    a null value is used for all rows where no data exists. Returns that data frame. """
+
+    df = pd.DataFrame(coin_time_history_dict['bitcoin'])
+    df = df.rename(columns={'price(usd)': 'bitcoin', 'date': 'date'})
+
+    for coin, time_history in coin_time_history_dict.items():
+        df[coin] = time_history['price(usd)']
+    #     df[coin] = np.where(df['date'] == time_history['date'], time_history['price(usd)'], None)
+   
+    # max_time_history_length = 0
+    # max_time_history_coin = ''
+    # for coin, time_history in coin_time_history_dict.items():
+    #     if len(time_history) > max_time_history_length:
+    #         max_time_history_coin = coin
     
-    pass
+    # print(max_time_history_coin)
+    # print(coin_time_history_dict[max_time_history_coin]['price(usd)'])
+    # print(coin_time_history_dict[max_time_history_coin])
+    # print(len(coin_time_history_dict[max_time_history_coin]))
+    # Find longest time history
+    # Extract dates and use this as base
+    # Add each coin, where data doesn't exist for price input a None
+    print(df)
+
+    return df
 
 
-def generate_time_history_comparison_files(event, context):    # FIXME: for google cloud function deployment
-# def generate_time_history_comparison_files():
+# def generate_time_history_comparison_files(event, context):    # FIXME: for google cloud function deployment
+def generate_time_history_comparison_files():
     """ Main run function that is called to pull in asset time histories, format, and output them to 
     cloud and sheets for plotting, etc.. """
 
@@ -119,12 +144,11 @@ def generate_time_history_comparison_files(event, context):    # FIXME: for goog
         coin_dict[crypto] = crypto_df
 
     # Format time histories
-    for coin, time_history in coin_dict.items():
-        format_time_history(coin, time_history)
+    formatted_time_history_df = format_time_history(coin_dict)
 
     # Output results
-    output_results(pd.DataFrame([ath_dict]))
+    # output_results(formatted_time_history_df)
 
 
 if __name__ == '__main__':
-    generate_ath_page()
+    generate_time_history_comparison_files()
