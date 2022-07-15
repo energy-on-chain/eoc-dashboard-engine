@@ -22,12 +22,16 @@ import google.auth
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
-JSON_FILE = 'credentials.json'
-gauth = GoogleAuth()
+# JSON_FILE = 'credentials.json'    # dev only
+gauth = GoogleAuth()    
 # gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
 credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+print(credentials)
+print(project_id)
 gauth.credentials = credentials    # production only
 drive = GoogleDrive(gauth)
+print(gauth.credentials)
+print(drive)
 
 
 # CONFIG
@@ -99,15 +103,16 @@ def _calculate_percentage_drawdown(df, price_column_label, coin):
     """ Calculates how far down (in terms of percentage) a coin is down given the
     input time history. """
 
-    current_price = df[price_column_label].iloc[-1]
-    ath_price = df[price_column_label].max()
-    percent_drawdown = round(current_price / ath_price, 3)
+    results_dict = {}
+    results_dict['current_price (usd)'] = df[price_column_label].iloc[-1]
+    results_dict['ath_price (usd)'] = df[price_column_label].max()
+    results_dict['percent_drawdown'] = round(1 - (results_dict['current_price (usd)']/ results_dict['ath_price (usd)']), 3)
 
-    return round(1 - percent_drawdown, 3)
+    return results_dict
 
 
-def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
-# def generate_ath_page():
+# def generate_ath_page(event, context):    # FIXME: for google cloud function deployment
+def generate_ath_page():
     """ Main run function that is called to calculate and output ath drawdown for each
     coind of interest to a google sheet. """
 
@@ -131,7 +136,7 @@ def generate_ath_page(event, context):    # FIXME: for google cloud function dep
         ath_dict[coin] = _calculate_percentage_drawdown(history, 'price(usd)', coin)
 
     # Output results
-    output_results(pd.DataFrame([ath_dict]))
+    output_results(pd.DataFrame(ath_dict))
 
 
 if __name__ == '__main__':
