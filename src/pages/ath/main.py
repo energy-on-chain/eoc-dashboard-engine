@@ -22,16 +22,22 @@ import google.auth
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
+
 # JSON_FILE = 'credentials.json'    # dev only
-gauth = GoogleAuth()    
+# gauth = GoogleAuth()    
 # gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
+
+gauth = GoogleAuth()    # pydrive library helper class for authenticating
+credentials, project_id = google.auth.default(scopes=SCOPES)    # production only (FIXME: the credentials coming out of this are not equivalent to the gauth.credentials being set above)
+print('Printing the credentials that were returnded by google.auth.default:')
+print(credentials)
 print(credentials.__dict__)
-print(project_id)
-gauth.credentials = credentials    # production only
-drive = GoogleDrive(gauth)
-print(gauth.credentials)
-print(drive.__dict__)
+# print(credentials.__dict__)
+# print(project_id)
+# gauth.credentials = credentials    # production only
+# drive = GoogleDrive(gauth)    # this creates the google drive API instance... correct creds must already be contained in gauth
+# print(gauth.credentials)
+# print(drive.__dict__)
 
 
 # CONFIG
