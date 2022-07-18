@@ -13,32 +13,37 @@ import itertools
 import datetime
 import pandas as pd 
 import numpy as np
+import json
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.cloud import storage
+from google.cloud import secretmanager
 from oauth2client.service_account import ServiceAccountCredentials
 import google.auth
 
 
 # AUTHENTICATE
 SCOPES = ['https://www.googleapis.com/auth/drive']
-JSON_FILE = 'credentials.json'
-gauth = GoogleAuth()
-gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, SCOPES)    # dev only
-# credentials, project_id = google.auth.default(scopes=SCOPES)    # production only
-# gauth.credentials = credentials    # production only
-drive = GoogleDrive(gauth)
+gauth = GoogleAuth()    # pydrive library helper class for authenticating
+client = secretmanager.SecretManagerServiceClient()
+secret_name = "EOC_DASHBOARD_SERVICE_ACCT_KEY_JSON"
+project_id = "eoc-dashboard-352623"
+request = {"name": f"projects/{project_id}/secrets/{secret_name}/versions/latest"}
+response = client.access_secret_version(request)
+credentials_json = json.loads(response.payload.data.decode("UTF-8"))
+gauth.credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_json, SCOPES)   
+drive = GoogleDrive(gauth)    # this creates the google drive API instance... correct creds must already be contained in gauth
 
 
 # CONFIG
 bucket_name = 'eoc-dashboard-bucket'
 cloud_file_path = 'pages'
-file_name = 'eoc-dashboard-crypto-ath-percent-drawdown.csv'
-file_name_excel = 'eoc-dashboard-crypto-ath-percent-drawdown.xlsx'
-DRIVE_FOLDER_ID = '1w8d5rb2khorGtsUOvQDQmDTx-p-NtGPp'   
-REFERENCE_FILE_ID = '1a19zS8RWsURrXv81MdanRmNg21KS1aiKyux3VSrPVcQ'   
-REFERENCE_FILENAME = 'eoc-dashboard-crypto-ath-percent-drawdown-reference'    
+file_name = 'eoc-dashboard-time-history-comparison.csv'
+file_name_excel = 'eoc-dashboard-time-history-comparison.xlsx'
+DRIVE_FOLDER_ID = '1fjVF41cZvQcIkArLcdzvJgLLKpC_PbCT'   
+REFERENCE_FILE_ID = '12ZO87d-zXi4t0rK3cz7HTLHP1cjiclpBdL0AtsKt6lQ'   
+REFERENCE_FILENAME = 'eoc-dashboard-time-history-comparison-reference'    
 crypto_list = [
     'bitcoin',
     'ethereum',
@@ -65,10 +70,6 @@ def output_results(df):
     """ Outputs the list of percentage ath drawdowns to 
     google drive sheets file and google cloud csv file. """
 
-    # Create dir for temp files if it doesn't already exist
-    # if not os.path.exists(os.path.join(os.getcwd(), 'tmp')):      # FIXME: production only    
-        # os.mkdir(os.path.join(os.getcwd(), 'tmp'))
-
     # Output to google cloud storage
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
@@ -90,9 +91,6 @@ def output_results(df):
     csv.Upload({'convert': True})
     print('updated google drive file!')
 
-    # # Tear down temp directory
-    shutil.rmtree(os.path.join(os.getcwd(), 'tmp'))    #FIXME: production only
-
 
 def format_time_history(coin_time_history_dict):
     """ Takes in dictionary of coin time histories. Uses bitcoin (aka the one with the longest
@@ -103,29 +101,15 @@ def format_time_history(coin_time_history_dict):
     df = df.rename(columns={'price(usd)': 'bitcoin', 'date': 'date'})
 
     for coin, time_history in coin_time_history_dict.items():
-        # df[coin] = time_history['price(usd)']
-        df[coin] = np.where(df['date'] == time_history['date'], time_history['price(usd)'], None)
+        if coin != 'bitcoin':
+            time_history_for_df = time_history.rename(columns={'price(usd)': coin, 'date': 'date'})
+            df = pd.merge(df, time_history_for_df, on='date', how='left')
    
-    # max_time_history_length = 0
-    # max_time_history_coin = ''
-    # for coin, time_history in coin_time_history_dict.items():
-    #     if len(time_history) > max_time_history_length:
-    #         max_time_history_coin = coin
-    
-    # print(max_time_history_coin)
-    # print(coin_time_history_dict[max_time_history_coin]['price(usd)'])
-    # print(coin_time_history_dict[max_time_history_coin])
-    # print(len(coin_time_history_dict[max_time_history_coin]))
-    # Find longest time history
-    # Extract dates and use this as base
-    # Add each coin, where data doesn't exist for price input a None
-    print(df)
-
     return df
 
 
-# def generate_time_history_comparison_files(event, context):    # FIXME: for google cloud function deployment
-def generate_time_history_comparison_files():
+def generate_time_history_comparison_files(event, context):    # FIXME: for google cloud function deployment
+# def generate_time_history_comparison_files():
     """ Main run function that is called to pull in asset time histories, format, and output them to 
     cloud and sheets for plotting, etc.. """
 
@@ -147,7 +131,7 @@ def generate_time_history_comparison_files():
     formatted_time_history_df = format_time_history(coin_dict)
 
     # Output results
-    # output_results(formatted_time_history_df)
+    output_results(formatted_time_history_df)
 
 
 if __name__ == '__main__':
