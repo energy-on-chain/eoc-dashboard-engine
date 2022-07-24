@@ -83,7 +83,7 @@ def output_results(df):
     # Output to google sheets
     local_file_excel = '/tmp/' + file_name_excel    # name file path
     writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='ath_drawdown')
+    df.to_excel(writer, sheet_name='time_histories')
     writer.save()
 
     csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
