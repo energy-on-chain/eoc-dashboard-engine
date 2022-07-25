@@ -55,8 +55,8 @@ stock_list = [
 
 
 # FUNCTIONS
-# def fmp_stock_history_daily(event, context):
-def fmp_stock_history_daily():    # FIXME: dev only
+def fmp_stock_history_daily(event, context):
+# def fmp_stock_history_daily():    # FIXME: dev only
     """ Pulls daily OHLC data for the input list of stocks. """
 
     # Run through each coin in list
