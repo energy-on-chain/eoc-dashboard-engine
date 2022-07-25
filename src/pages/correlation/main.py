@@ -60,7 +60,10 @@ stock_list = [
     '^DJI',
     '^IXIC',
     '^TYX',
+    '^FVX',
     '^TNX',
+    '^VIX',
+    'DX-Y.NYB',
     'ZGUSD',
     'CLUSD',
     'NGUSD'
@@ -237,5 +240,5 @@ def generate_correlation_page(event, context):    # FIXME: for google cloud func
     output_results(list(history_dict.keys()), big_correlation_matrix)
 
 
-# if __name__ == '__main__':
-#     generate_correlation_page()
+if __name__ == '__main__':
+    generate_correlation_page()

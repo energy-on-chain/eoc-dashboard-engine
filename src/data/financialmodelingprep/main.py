@@ -44,7 +44,10 @@ stock_list = [
     '^DJI',
     '^IXIC',
     '^TYX',
+    '^FVX',
     '^TNX',
+    '^VIX',
+    'DX-Y.NYB',
     'ZGUSD',
     'CLUSD',
     'NGUSD'
@@ -52,8 +55,8 @@ stock_list = [
 
 
 # FUNCTIONS
-def fmp_stock_history_daily(event, context):
-# def fmp_stock_history_daily():    # FIXME: dev only
+# def fmp_stock_history_daily(event, context):
+def fmp_stock_history_daily():    # FIXME: dev only
     """ Pulls daily OHLC data for the input list of stocks. """
 
     # Run through each coin in list
@@ -61,7 +64,6 @@ def fmp_stock_history_daily(event, context):
 
         # Pull data
         print('Pulling data for ' + stock + '...')
-        print(fmp_api_key)
         try:
             url = 'https://financialmodelingprep.com/api/v3/historical-price-full/' + stock + '?apikey=' + fmp_api_key
             res = requests.get(url).json()
@@ -97,11 +99,7 @@ def fmp_stock_history_daily(event, context):
 
 # Local testing entry point
 if __name__ == '__main__':
-
-    # fmp_stock_history_daily()
-    # url = 'https://financialmodelingprep.com/api/v3/symbol/available-indexes?apikey=' + fmp_api_key
-    url = 'https://financialmodelingprep.com/api/v3/historical-price-full/' + '^DJI' + '?apikey=' + fmp_api_key
-    print(requests.get(url).json())
+    fmp_stock_history_daily()
 
 # TODO
 # 
