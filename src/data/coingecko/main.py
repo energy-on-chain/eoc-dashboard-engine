@@ -35,15 +35,11 @@ interval = 'daily'
 coin_list = [
     'bitcoin',
     'ethereum',
-    'tether',
-    'usd-coin',
     'binancecoin',
-    'binance-usd',
     'ripple',
     'cardano',
     'solana',
     'dogecoin',
-    'dai',
     'polkadot',
     'kusama',
     'avalanche-2',
@@ -54,6 +50,16 @@ coin_list = [
     'sushi',
     'hex',
     'litecoin',
+    'binance-usd',    # stablecoins
+    'tether',
+    'usd-coin',
+    'dai',
+    'frax',    
+    'true-usd',    
+    'paxos-standard',    
+    'neutrino',    
+    'usdd',    
+    'tether-gold',    
 ]
 
 
