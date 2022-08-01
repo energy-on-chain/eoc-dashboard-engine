@@ -122,6 +122,10 @@ def output_results(asset_list, correlation_matrix):
     writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
     for sheet in list(google_sheets_matrix.keys()):
         google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
+
+    last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
+    last_updated_df.to_excel(writer, sheet_name='last_updated')    # add last updated sheet
+    
     writer.save()
 
     csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})

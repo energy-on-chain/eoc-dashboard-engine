@@ -78,13 +78,33 @@ def _output_to_cloud(df):
 def _output_to_drive(df):
     """ Outputs the input data frame to google sheets on google drive. """
 
-    file_name = 'eoc-dashboard-stablecoin-24h-history.csv'    # prep local file
+    file_name = 'eoc-dashboard-stablecoin-24h-history.xlsx'    # prep local file
     local_file = '/tmp/' + file_name
-    df.to_csv(local_file, header=True, index=True)
+    writer = pd.ExcelWriter(local_file, engine='xlsxwriter')
 
-    csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
-    csv.SetContentFile(local_file)
-    csv.Upload({'convert': True})
+    df.to_excel(writer, sheet_name='stablecoins')    # add stablecoins sheet
+
+    last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
+    last_updated_df.to_excel(writer, sheet_name='last_updated')    # add last updated sheet
+
+    writer.save()
+
+
+    # csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
+    # csv.SetContentFile(local_file)
+    # csv.Upload({'convert': True})
+    # df.to_csv(local_file, header=True, index=True)
+    # file_name_excel = 'eoc-dashboard-correlation-matrix.xlsx'
+    # local_file_excel = local_file_path + '/' + file_name_excel
+    # writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
+    # for sheet in list(google_sheets_matrix.keys()):
+    #     google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
+    # last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
+    # last_updated_df.to_excel(writer, sheet_name='last_updated')    # add last updated sheet
+    # csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
+    # csv.SetContentFile(local_file_excel)
+    # csv.Upload({'convert': True})
+    # print('updated google drive file!')
 
 
 def _calculate_ssr(df):
@@ -95,7 +115,7 @@ def _calculate_ssr(df):
     result_df = df.copy()
     result_df['total-stablecoin-mc'] = 0
 
-    for header in df.columns:    # sum up stablecoin market caps
+    for header in result_df.columns:    # sum up stablecoin market caps
         if ("mc" in header) and ("bitcoin" not in header):
             print('added: ', header)
             result_df['total-stablecoin-mc'] = result_df['total-stablecoin-mc'] + result_df[header]
@@ -121,8 +141,8 @@ def _format_time_history(coin_time_history_dict):
     return df
 
 
-def generate_stablecoin_page(event, context):    # FIXME: for google cloud function deployment
-# def generate_stablecoin_page():
+# def generate_stablecoin_page(event, context):    # FIXME: for google cloud function deployment
+def generate_stablecoin_page():
     """ Main run function that is called to pull stablecoin histories from clouds, compute useful metrics,
     then output those metrics as tables and coin time histories to the cloud and drive for front end use. """
 
@@ -159,13 +179,14 @@ def generate_stablecoin_page(event, context):    # FIXME: for google cloud funct
 
     # Combine into single time history df
     combined_df = _format_time_history(history_dict)
+    print(combined_df)
 
     # Calculate and add total MC, SSR FIXM: add SSR oscillator?
-    full_df = _calculate_ssr(combined_df)
+    # full_df = _calculate_ssr(combined_df)    # FIXME
 
     # Output results
-    _output_to_cloud(full_df)
-    _output_to_drive(full_df)
+    # _output_to_cloud(full_df)    # FIXME
+    # _output_to_drive(full_df)    # FIXME
 
 
 # ENTRY POINT
