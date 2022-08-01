@@ -43,6 +43,7 @@ cloud_file_path = 'pages'
 DRIVE_FOLDER_ID = '1eKN2U172WEghWQWeWGfx7LKNiQk3eEBr'   
 REFERENCE_FILE_ID = '1MCtIa4w9FrTJ9p2FAkUFmygAXZh3YCt95RnFcjIlWg4'   
 REFERENCE_FILENAME = 'eoc-dashboard-stablecoin-24h-history' 
+summary_col_list = ['coin', 'price', 'mc', 'vol', 'date', 'supply', 'supply-24-change', 'vol-24h-change']
 crypto_path = 'data/coin_histories/coingecko_coin_history_24h_'
 crypto_list = [
     'bitcoin',
@@ -60,51 +61,46 @@ crypto_list = [
 
 
 # FUNCTIONS
-def _output_to_cloud(df):
+def _output_to_cloud(input_dict):
     """ Outputs the input data frame to google cloud. """
 
     storage_client = storage.Client()    # initialize storage client
     bucket = storage_client.bucket(bucket_name)
 
-    file_name = 'eoc-dashboard-stablecoin-24h-history.csv'    # prep local file
-    local_file = '/tmp/' + file_name
-    cloud_file = cloud_file_path + '/' + file_name
-    df.to_csv(local_file, header=True, index=True)
-    
-    blob = bucket.blob(cloud_file)    # upload to cloud
-    blob.upload_from_filename(local_file) 
 
 
-def _output_to_drive(df):
+    for sheet in input_dict.keys():
+
+        # Output to google cloud storage
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        file_name = 'eoc-dashboard-stablecoins-' + sheet + '.csv'
+        local_file = '/tmp/' + file_name
+        cloud_file = cloud_file_path + '/' + file_name
+        input_dict[sheet].to_csv(local_file, header=True, index=True)
+        blob = bucket.blob(cloud_file)
+        blob.upload_from_filename(local_file) 
+        print('updated google cloud file!')
+
+
+def _output_to_drive(input_dict):
     """ Outputs the input data frame to google sheets on google drive. """
 
     file_name = 'eoc-dashboard-stablecoin-24h-history.xlsx'    # prep local file
     local_file = '/tmp/' + file_name
     writer = pd.ExcelWriter(local_file, engine='xlsxwriter')
-
-    df.to_excel(writer, sheet_name='stablecoins')    # add stablecoins sheet
+    for sheet in list(input_dict.keys()):
+        input_dict[sheet].to_excel(writer, sheet_name=sheet)
 
     last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
     last_updated_df.to_excel(writer, sheet_name='last_updated')    # add last updated sheet
 
     writer.save()
 
-
-    # csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
-    # csv.SetContentFile(local_file)
-    # csv.Upload({'convert': True})
-    # df.to_csv(local_file, header=True, index=True)
-    # file_name_excel = 'eoc-dashboard-correlation-matrix.xlsx'
-    # local_file_excel = local_file_path + '/' + file_name_excel
-    # writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
-    # for sheet in list(google_sheets_matrix.keys()):
-    #     google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
-    # last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
-    # last_updated_df.to_excel(writer, sheet_name='last_updated')    # add last updated sheet
-    # csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
-    # csv.SetContentFile(local_file_excel)
-    # csv.Upload({'convert': True})
-    # print('updated google drive file!')
+    csv = drive.CreateFile({'id': REFERENCE_FILE_ID, 'parents': [{'id': DRIVE_FOLDER_ID}], 'title': REFERENCE_FILENAME, 'mimeType': 'application/vnd.ms-excel'})
+    csv.SetContentFile(local_file)
+    csv.Upload({'convert': True})
+    print('updated google drive file!')
 
 
 def _calculate_ssr(df):
@@ -141,13 +137,27 @@ def _format_time_history(coin_time_history_dict):
     return df
 
 
-# def generate_stablecoin_page(event, context):    # FIXME: for google cloud function deployment
-def generate_stablecoin_page():
+def _create_sub_sheet(input_df, key_word):
+    """ Takes the full combined df of data for stablecoins in and separates out columns
+    containing the key word so they can be output into more focused sheets in the excel
+    files on the cloud and drive. Returns a dataframe of the subset of interest. """
+
+    df = input_df.copy()
+    key_word_cols = [col for col in df.columns if key_word in col]
+    key_word_cols = key_word_cols + ['date']
+    df = df.loc[:, key_word_cols]
+
+    return df
+
+
+def generate_stablecoin_page(event, context):    # FIXME: for google cloud function deployment
+# def generate_stablecoin_page():
     """ Main run function that is called to pull stablecoin histories from clouds, compute useful metrics,
     then output those metrics as tables and coin time histories to the cloud and drive for front end use. """
 
     # GET DATA
     history_dict = {}
+    most_recent_value_list = []
 
     # Load cryptos
     for crypto in crypto_list:
@@ -171,22 +181,36 @@ def generate_stablecoin_page():
             crypto_df.drop('unix', axis=1, inplace=True)   
             crypto_df.drop('utc', axis=1, inplace=True)   
 
-            history_dict[crypto] = crypto_df            
+            history_dict[crypto] = crypto_df 
+            most_recent_value_list.append([crypto] + crypto_df.iloc[len(crypto_df)-1].to_list())        
 
         except Exception as e:
             print('Error while loading and creating time hitories for for:  ' + crypto)
             print(e)
 
     # Combine into single time history df
+    most_recent_data_df = pd.DataFrame(most_recent_value_list, columns=summary_col_list)
     combined_df = _format_time_history(history_dict)
-    print(combined_df)
+
+    # Add all pages to be output for stablecoins
+    stablecoin_page_dict = {}
+
+    # Add summary sheet for most recent data on each coin
+    stablecoin_page_dict['summary'] = most_recent_data_df
+
+    # Add time histories 
+    stablecoin_page_dict['full-time-history'] = combined_df    # full time history for all stables, all values
+    stablecoin_page_dict['mc-time-history'] = _create_sub_sheet(combined_df, 'mc')    # market cap only
+    stablecoin_page_dict['price-time-history'] = _create_sub_sheet(combined_df, 'price')    # price only
+    stablecoin_page_dict['vol-time-history'] = _create_sub_sheet(combined_df, 'vol')    # volume only
+    stablecoin_page_dict['supply-time-history'] = _create_sub_sheet(combined_df, 'supply')    # supply only
 
     # Calculate and add total MC, SSR FIXM: add SSR oscillator?
-    # full_df = _calculate_ssr(combined_df)    # FIXME
+    # full_df = _calculate_ssr(combined_df)    # FIXME can be added later
 
     # Output results
-    # _output_to_cloud(full_df)    # FIXME
-    # _output_to_drive(full_df)    # FIXME
+    _output_to_cloud(stablecoin_page_dict)
+    _output_to_drive(stablecoin_page_dict)
 
 
 # ENTRY POINT
