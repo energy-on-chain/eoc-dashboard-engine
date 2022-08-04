@@ -1,6 +1,6 @@
 ###############################################################################
 # FILENAME: stablecoins.py
-# CPROJECT: EOC-Dashboard-Engine
+# PROJECT: EOC-Dashboard-Engine
 # AUTHOR: Matt Hartigan
 # DATE CREATED: 26-July-2022
 # DESCRIPTION: Pull in data for stable coins from cloud and output a table of
@@ -66,8 +66,6 @@ def _output_to_cloud(input_dict):
 
     storage_client = storage.Client()    # initialize storage client
     bucket = storage_client.bucket(bucket_name)
-
-
 
     for sheet in input_dict.keys():
 
