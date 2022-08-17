@@ -7,6 +7,16 @@
 ###############################################################################
 
 
+email_config = {
+    'sender_email': 'matthew@energyonchain.net',
+    'receiver_email_list': ['matthew.t.hartigan@gmail.com'],
+    'subject': 'CVC Anomaly Status Summary',
+    'body': 'The following anomalies have been identified: ',
+    'footer': 'For more details, see the CVC Dashboard here: https://docs.google.com/spreadsheets/d/1ZncxtsmBCm31MSKqwDMfxtdvG-OTosrpyhO09p1wPSY/edit#gid=1851173820',
+    'tagline': 'Happy hunting!',
+}
+
+
 config_params = {
     'ath_drawdown (btc)': {
         'input_time_history_file_path': 'gs://eoc-dashboard-bucket/pages/eoc-dashboard-crypto-ath-percent-drawdown.csv',

@@ -21,7 +21,7 @@ from google.cloud import secretmanager
 from oauth2client.service_account import ServiceAccountCredentials
 import google.auth
 
-from anomaly_config import config_params
+from anomaly_config import email_config, config_params
 
 
 # AUTHENTICATE
@@ -91,8 +91,8 @@ def _send_email_alert(input_dict):
     pass
 
 
-def generate_anomaly_page(event, context):    # FIXME: for cloud deployment only
-# def generate_anomaly_page():
+# def generate_anomaly_page(event, context):    # FIXME: for cloud deployment only
+def generate_anomaly_page():
     """
     FIXME: description goes here
     """
