@@ -121,6 +121,7 @@ def output_results(asset_list, correlation_matrix):
 
     writer = pd.ExcelWriter(local_file_excel, engine='xlsxwriter')
     for sheet in list(google_sheets_matrix.keys()):
+        print(google_sheets_matrix[sheet])
         google_sheets_matrix[sheet].to_excel(writer, sheet_name=sheet)
 
     last_updated_df = pd.DataFrame({'Last Updated': [datetime.datetime.utcnow()]})
