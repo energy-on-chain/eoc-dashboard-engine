@@ -57,9 +57,11 @@ coin_list = [
     'frax',    
     'true-usd',    
     'paxos-standard',    
-    'neutrino',    
-    'usdd',    
-    'tether-gold',    
+    # 'neutrino',    
+    # 'usdd',    
+    # 'tether-gold',    
+    # 'gemini-dollar',
+    # 'nusd',
 ]
 
 
@@ -83,6 +85,7 @@ def coingecko_coin_history_daily(event, context):
         # Parse data
         try:
             print('Parsing data for ' + coin + '...')
+            print(res)
             price_df = pd.DataFrame.from_records(res['prices'], columns=['unix', 'price(usd)'])
             mc_df = pd.DataFrame.from_records(res['market_caps'], columns=['unix', 'market_cap(usd)'])
             vol_df = pd.DataFrame.from_records(res['total_volumes'], columns=['unix', 'volume(usd)'])

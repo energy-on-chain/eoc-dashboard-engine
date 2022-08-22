@@ -54,9 +54,11 @@ crypto_list = [
     'frax',    
     'true-usd',    
     'paxos-standard',    
-    'neutrino',    
-    'usdd',    
-    'tether-gold',    
+    # 'neutrino',    
+    # 'usdd',    
+    # 'tether-gold', 
+    # 'gemini-dollar',
+    # 'nusd'
 ]
 
 
@@ -106,15 +108,30 @@ def _calculate_ssr(df):
     based on BTC MC / Total Stablecoin MC, then returns the original df with this time history
     added as a new column. """
 
+    basket = [
+        'tether',
+        'usd-coin',
+        'dai',
+        'true-usd',    
+        'paxos-standard',    
+        'gemini-dollar',
+        'nusd'
+    ]
+
     result_df = df.copy()
     result_df['total-stablecoin-mc'] = 0
 
-    for header in result_df.columns:    # sum up stablecoin market caps
-        if ("mc" in header) and ("bitcoin" not in header):
-            print('added: ', header)
-            result_df['total-stablecoin-mc'] = result_df['total-stablecoin-mc'] + result_df[header]
+    for stablecoin in basket:
+        df = pd.read_csv('gs://eoc-dashboard-bucket/data/coin_histories/coingecko_coin_history_24h_' + stablecoin + '.csv')
+        print(stablecoin)
+        print(df)
+
+    # for header in result_df.columns:    # sum up stablecoin market caps
+    #     if ("mc" in header) and ("bitcoin" not in header):
+    #         print('added: ', header)
+    #         result_df['total-stablecoin-mc'] = result_df['total-stablecoin-mc'] + result_df[header]
     
-    result_df['ssr'] = result_df['bitcoin-mc'] / result_df['total-stablecoin-mc']
+    # result_df['ssr'] = result_df['bitcoin-mc'] / result_df['total-stablecoin-mc']
 
     return result_df
 
@@ -204,10 +221,10 @@ def generate_stablecoin_page(event, context):    # FIXME: for google cloud funct
     stablecoin_page_dict['supply-time-history'] = _create_sub_sheet(combined_df, 'supply')    # supply only
 
     # Calculate and add total MC, SSR FIXM: add SSR oscillator?
-    # full_df = _calculate_ssr(combined_df)    # FIXME can be added later
+    # full_df = _calculate_ssr(combined_df)    
 
     # Output results
-    _output_to_cloud(stablecoin_page_dict)
+    _output_to_cloud(stablecoin_page_dict)    # FIXME
     _output_to_drive(stablecoin_page_dict)
 
 

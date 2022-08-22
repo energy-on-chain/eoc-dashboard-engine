@@ -52,13 +52,13 @@ crypto_list = [
 ]
 stock_path = 'data/stock_histories/fmp_stock_history_24h_'
 stock_list = [
+    '^GSPC',
+    '^IXIC',
+    '^DJI',
     'AAPL',
     'AMZN',
     'GOOG',
     'META',
-    '^GSPC',
-    '^DJI',
-    '^IXIC',
     '^TYX',
     '^FVX',
     '^TNX',
